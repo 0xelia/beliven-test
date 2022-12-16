@@ -26,7 +26,17 @@ export const useProjectStore = defineStore('project', {
       "description": "Felicit ipsum dolor",
       "createdAt": "2020-08-12",
       }
-    ]  
+    ],
+    navLinks: [
+      {
+        text: 'All',
+        active: true
+      },
+      {
+        text: 'Most Stars',
+        active: false
+      }
+    ], 
   }),
   getters: {
 
