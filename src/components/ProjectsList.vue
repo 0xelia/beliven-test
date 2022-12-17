@@ -12,15 +12,22 @@
     import ProjectCard from './ProjectCard.vue';
     import { useProjectStore } from '@/store/projects';
     import { mapState } from 'pinia';
+    import { mapActions } from 'pinia';
     export default {
         components: {
             Project: ProjectCard
         },
         computed: {
-            ...mapState(useProjectStore,['projects'])
+            ...mapState(useProjectStore,{
+                projects: 'projectsList',
+            })
+        },
+        methods: {
+            ...mapActions(useProjectStore,['setDefault'])
         },
         mounted(){
-
+            this.setDefault()
+            console.log(this.projects)
         }
     }
 </script>
