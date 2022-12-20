@@ -21,7 +21,8 @@
                     <template v-for="(link, i) in navLinks" :key="i">
                         <button 
                             @click="setProjects(link)"
-                            :class="[link.active ? 'text-black after:absolute after:h-[2px] after:bg-violet-800 after:-bottom-[9px] after:-left-1 after:-right-1' : '', 'relative text-md leading-7']">
+                            :class="[link.active ? 'relative text-black after:absolute after:h-[2px] after:bg-violet-800 after:-bottom-[9px] after:-left-1 after:-right-1' : '', 
+                            'text-md leading-7 transition ease-out duration-[400ms]']">
                             {{link.text}}
                         </button>
                     </template>
@@ -29,11 +30,18 @@
 
                 <!-- search and sort bar -->
                 <nav class="flex gap-1">
-                    <input type="search" name="filter_by_name" id="" placeholder="Filter by name"
+                    <input 
+                    v-model="query"
+                    @input="filterByName(query)"
+                    type="search" name="filter_by_name" id="" placeholder="Filter by name"
                     class="border border-gray-300 rounded-md px-1 text-sm py-1" >
                     
-                    <select name="order_by" id="" class="text-gray-400 py-1 border border-gray-300 rounded-md px-1 text-sm">
-                        <option value="default">Order By</option>
+                    <select 
+                    @input="orderProjects($event.target.value)" name="order_by" id="" class="text-gray-400 py-1 border border-gray-300 rounded-md px-1 text-sm">
+                        <option value="0">Order By</option>
+                        <option 
+                            v-for="(input, i) in orderInputs" :key="i" :value="i + 1">Order By {{input}}
+                        </option>
                     </select>
                 </nav>
             </div>
@@ -51,14 +59,20 @@
         components: {
             Popup: ProjectCreate
         },
+        data(){
+            return {
+                query: ''
+            }
+        },
         computed: {
-            ...mapState(useProjectStore, ['navLinks','popupVisible','mostRated']),
+            ...mapState(useProjectStore, ['navLinks','popupVisible','mostRated','orderInputs','projects','rawProjects','currentList','query']),
         },
         methods: {
-            ...mapActions(useProjectStore,['setVisible','setProjects']),
+            ...mapActions(useProjectStore,['setVisible','setDefault','clearFilters','setProjects','orderProjects','filterByName']),
         },
-        mounted() {
-
+        mounted() {    
+            this.setDefault()
+            
         }
     }
 </script>

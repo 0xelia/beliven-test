@@ -21,7 +21,7 @@
         </p>
         <!-- realese date -->
         <p class="flex items-center">
-            {{project.createdAt}}
+            {{project.creation}}
         </p>
     </li>
 </template>

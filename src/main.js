@@ -7,7 +7,6 @@ import { faStar } from '@fortawesome/free-regular-svg-icons'
 import { faX } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
-
 library.add(faStar, faX)
 createApp(App).use(createPinia())
 .component('font-awesome-icon', FontAwesomeIcon)
