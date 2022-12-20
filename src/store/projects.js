@@ -1,7 +1,6 @@
 
 import { defineStore } from 'pinia'
 import dayjs from 'dayjs'
-import { faCommentsDollar } from '@fortawesome/free-solid-svg-icons'
 export const useProjectStore = defineStore('project', { 
   state: () => ({ 
   rawProjects: [
@@ -146,27 +145,31 @@ export const useProjectStore = defineStore('project', {
       }
     },
     checkStorage(arr){
-      if(localStorage.length > 0){
-        for(let i = 1; i <= localStorage.length; i++){
-          let id = localStorage.getItem(i)
-          console.log(id)
-          if(id){
-            arr.forEach(el => {
-              if(el.id == id){
-                el.stars++
-                this.ratedProjects.push(el)
-              }
-            })
-          }
-        }
+      let rated = localStorage.getItem('rated')
+      if(rated){
+        rated = rated.split(',')
+        arr.forEach(el => {
+          rated.forEach(id => {
+            if(el.id == id){
+              el.stars++
+              this.ratedProjects.push(el.id)
+            }
+          })
+        })
       }
+      console.log(rated)
+      console.log(arr)
     },
     setDefault(){
       this.rawProjects.forEach((el,i) => {
         el.id = i + 1
+        if(!el.stars){
+          el.stars = 0
+        }
       })
       this.checkStorage(this.rawProjects)
       this.currentList = this.getProjects()
+      console.log(this.ratedProjects)
       return this.currentList
     },
     clearFilters(){
@@ -176,32 +179,45 @@ export const useProjectStore = defineStore('project', {
     },
 
     rate(project){
-      if(!this.ratedProjects.includes(project)){
+      if(!this.ratedProjects.includes(project.id)){
         project.stars++
         this.rawProjects.forEach(el => {
           if(el.id == project.id){
             el.stars++
           }
         })
-
         if(!project.stars){
           project.stars = 1
         }
-        this.ratedProjects.push(project)
-        this.ratedProjects.forEach((el) => {
-          localStorage.setItem(el.id, el.id)
-        });
+        this.ratedProjects.push(project.id)
+        //array di id che andrà salvato nel local storage
+        const rated = []
+        this.ratedProjects.forEach(el => {
+          if(!rated.includes(el)){
+            rated.push(el)
+          }
+          localStorage.setItem('rated',rated)
+          console.log(localStorage)
+        })
+
       }else{
         project.stars--
         this.rawProjects.forEach(el => {
-          if(el == rawProject){
+          if(el.id == project.id){
             el.stars--
           }
         })
         const startIndex = this.ratedProjects.indexOf(project)
         const removed = this.ratedProjects.splice(startIndex, 1)
-        const key = removed[0].id
-        localStorage.removeItem(key)
+        //array di id che andrà a modificare local storage
+        const rated = []
+        this.ratedProjects.forEach(el => {
+          if(!rated.includes(el)){
+            rated.push(el)
+          }
+        })
+        localStorage.setItem('rated',rated)
+        console.log(localStorage)
       }
     },
     setActive(obj, arr){
