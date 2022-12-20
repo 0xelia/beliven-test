@@ -157,8 +157,6 @@ export const useProjectStore = defineStore('project', {
           })
         })
       }
-      console.log(rated)
-      console.log(arr)
     },
     setDefault(){
       this.rawProjects.forEach((el,i) => {
@@ -169,7 +167,6 @@ export const useProjectStore = defineStore('project', {
       })
       this.checkStorage(this.rawProjects)
       this.currentList = this.getProjects()
-      console.log(this.ratedProjects)
       return this.currentList
     },
     clearFilters(){
