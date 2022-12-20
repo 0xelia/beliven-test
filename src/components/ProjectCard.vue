@@ -11,7 +11,7 @@
         <!-- stars counter -->
         <p v-if="project.stars" class="flex gap-1 items-center">
             {{project.stars}}
-            <font-awesome-icon @click="rate(project)" class="cursor-pointer" icon="fa-regular fa-star" />
+            <font-awesome-icon @click="rate(project)" :class="[ratedProjects.includes(project.id) ? 'text-yellow-400': '' ,'cursor-pointer']" icon="fa-solid fa-star" />
         </p>
         <p class="text-center" v-else>
             No ratings yet <br>
@@ -21,7 +21,7 @@
         </p>
         <!-- realese date -->
         <p class="flex items-center">
-            {{project.createdAt}}
+            {{project.creation}}
         </p>
     </li>
 </template>
@@ -29,12 +29,18 @@
 <script>
     import { useProjectStore } from '@/store/projects';
     import { mapActions } from 'pinia';
+    import { mapState } from 'pinia';
     export default {
         props: {
             project: Object
         },
+        computed: {
+            ...mapState(useProjectStore,['ratedProjects'])
+        },
         methods: {
             ...mapActions(useProjectStore,['rate']),
+        },
+        mounted(){
         }
     }
 </script>

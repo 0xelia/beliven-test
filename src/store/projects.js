@@ -1,9 +1,9 @@
 
 import { defineStore } from 'pinia'
-
+import dayjs from 'dayjs'
 export const useProjectStore = defineStore('project', { 
   state: () => ({ 
-  projects: [
+  rawProjects: [
       {
       "name": "Awesome project",
       "description": "Lorem ipsum dolor sit amet",
@@ -23,102 +23,254 @@ export const useProjectStore = defineStore('project', {
       "stars": 60
       },
       {
+      "name": "Fantasy project",
+      "description": "Ipsum lorem sit",
+      "createdAt": "2021-09-10",
+      "stars": 60
+      },
+      {
       "name": "Greek project",
       "description": "Felicit ipsum dolor",
       "createdAt": "2020-08-12",
       }
     ],
-  projectsList: [],
+  currentList: [],
   ratedProjects: [],
-    navLinks: [
-      {
-        text: 'All',
-        active: true
-      },
-      {
-        text: 'Most Stars',
-        active: false
-      }
-    ], 
-    popupVisible: false,
-    warning: {
+  navLinks: [
+    {
+      text: 'All',
+      active: true
+    },
+    {
+      text: 'Most Stars',
+      active: false
+    }
+  ], 
+  query: '',
+  popupVisible: false,
+  warning: {
       text: `This input can't be blank!`,
       visible: false
     }
   }),
   getters: {
-    projectsWithStars(){
-      return this.projects.map(el =>{
-        if(!el.stars){
-          el.stars = 0
+    projects(){
+      return this.rawProjects.map((project) =>{
+        let prjct = {
+          id: project.id,
+          name: project.name,
+          description: project.description,
+          creation: project.createdAt,
+          stars: project.stars
         }
-        return el
+
+        if(!prjct.stars)
+          prjct.stars = 0;
+
+        return prjct
       })
     },
     mostRated(){
-      const mostRated = this.projectsWithStars.sort((a,b) => {
+      const mostRated = this.projects.sort((a,b) => {
         return b.stars - a.stars
       })
       return mostRated.slice(0,3)
     },
+    orderInputs(){
+      const keys = Object.keys(this.projects[0])
+      const x = keys.indexOf('description')
+      const y = keys.indexOf('id')
+      keys.splice(x,1)
+      keys.splice(y,1)
+      return keys
+    },
+    searchedProjects(){
+      return this.projects.filter(el => {
+        const {name} = el
+        if(name.toLowerCase().includes(this.query.toLowerCase())){
+          return true
+        }
+        return false
+      })
+    }
   },
   actions: {
     setVisible(){
       return this.popupVisible = !this.popupVisible
+    },
+    getProjects(){
+      const projects = this.rawProjects.map((project) =>{
+        let prjct = {
+          id: project.id,
+          name: project.name,
+          description: project.description,
+          creation: project.createdAt,
+          stars: project.stars
+        }
+
+        if(!prjct.stars)
+          prjct.stars = 0;
+
+        return prjct
+      })
+
+      return projects
+    },
+    getProject(arr,id){
+      return arr.filter(el => {
+        if(el.id == id){
+          return true
+        }
+      })
     },
     createProject(name, description){
       const newProject = {}
       newProject.name = name
       newProject.description = description
       newProject.stars = 0
-      newProject.createdAt = 'Right Now'
+      newProject.createdAt = dayjs().format('YYYY-MM-DD')
       return newProject
     },
     addProject(name, description){
       if(name.trim() && description.trim()){
         const project = this.createProject(name, description)
-        this.projects.unshift(project)
+        this.rawProjects.push(project)
+        this.clearFilters()
+        // all'aggiunta di un nuovo progetto la lista si ordina per data di creazione di default
+        this.orderProjects(2)
         this.warning.visible = false
         this.popupVisible = false
       } else{
         this.warning.visible = true
       }
     },
-    setProjects(link){
-      switch (link.text) {
-        case 'Most Stars':
-          this.projectsList = this.mostRated
-          this.navLinks.forEach(link => {
-            link.active = false
+    checkStorage(arr){
+      let rated = localStorage.getItem('rated')
+      if(rated){
+        rated = rated.split(',')
+        arr.forEach(el => {
+          rated.forEach(id => {
+            if(el.id == id){
+              el.stars++
+              this.ratedProjects.push(el.id)
+            }
           })
-          link.active = true
-          break;
-          
-          case 'All':
-            this.setDefault()
-            this.navLinks.forEach(link => {
-              link.active = false
-            })
-            link.active = true
-            break;
+        })
       }
     },
     setDefault(){
-      this.projectsList = this.projects
+      this.rawProjects.forEach((el,i) => {
+        el.id = i + 1
+        if(!el.stars){
+          el.stars = 0
+        }
+      })
+      this.checkStorage(this.rawProjects)
+      this.currentList = this.getProjects()
+      return this.currentList
     },
+    clearFilters(){
+      const clearList = this.getProjects()
+      this.checkStorage(clearList)
+      this.currentList = clearList
+    },
+
     rate(project){
-      if(!this.ratedProjects.includes(project)){
+      if(!this.ratedProjects.includes(project.id)){
         project.stars++
+        this.rawProjects.forEach(el => {
+          if(el.id == project.id){
+            el.stars++
+          }
+        })
         if(!project.stars){
           project.stars = 1
         }
-        this.ratedProjects.push(project)
+        this.ratedProjects.push(project.id)
+        //array di id che andrà salvato nel local storage
+        const rated = []
+        this.ratedProjects.forEach(el => {
+          if(!rated.includes(el)){
+            rated.push(el)
+          }
+          localStorage.setItem('rated',rated)
+          console.log(localStorage)
+        })
+
       }else{
         project.stars--
+        this.rawProjects.forEach(el => {
+          if(el.id == project.id){
+            el.stars--
+          }
+        })
         const startIndex = this.ratedProjects.indexOf(project)
-        this.ratedProjects.splice(startIndex, 1)
-        console.log(this.ratedProjects)
+        const removed = this.ratedProjects.splice(startIndex, 1)
+        //array di id che andrà a modificare local storage
+        const rated = []
+        this.ratedProjects.forEach(el => {
+          if(!rated.includes(el)){
+            rated.push(el)
+          }
+        })
+        localStorage.setItem('rated',rated)
+        console.log(localStorage)
       }
+    },
+    setActive(obj, arr){
+      arr.forEach(el => {
+        el.active = false
+      });
+      obj.active = true
+    },
+    setProjects(link){
+      if(link.text == 'Most Stars'){
+        this.currentList.sort((a,b) => {
+          return b.stars - a.stars
+        })
+        this.currentList = this.currentList.slice(0,3)
+        // this.checkStorage(this.currentList)
+        this.setActive(link, this.navLinks)
+      }else if(link.text == 'All'){
+        // this.clearFilters()
+        this.currentList = this.getProjects()
+        this.setActive(link, this.navLinks)
+      }
+
+    },
+    orderProjects(value){
+      const input = parseInt(value)
+      switch(input){
+        case 1:
+          this.currentList.sort((a,b) => {
+            if(a.name < b.name){
+              return -1
+            }
+          })
+          break;
+        case 2:
+          this.currentList.sort((a,b) => {
+            if(a.creation > b.creation){
+              return -1
+            }
+          })
+          break;
+        case 3:
+          this.currentList.sort((a,b) => {
+            if(a.stars > b.stars){
+              return -1
+            }
+          })
+          break;
+      }
+    },
+    setQuery(query){
+      return this.query = query
+    },
+    filterByName(query){
+      this.setProjects(this.navLinks[0])
+      this.setQuery(query)
+      this.currentList = this.searchedProjects
     }
   },
 })
