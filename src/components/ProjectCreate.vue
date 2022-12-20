@@ -1,7 +1,7 @@
 <template>
     <div 
     class="fixed z-50 top-0 bottom-0 left-0 right-0 grid place-items-center bg-black/40 backdrop-blur-md">
-        <div class="w-1/2 h-[450px] flex flex-col bg-gray-100 rounded-lg -translate-y-1/4  relative">
+        <div class="w-5/6 sm:w-1/2 h-[450px] flex flex-col bg-gray-100 rounded-lg sm:-translate-y-1/4  relative">
             <font-awesome-icon 
             @click="setVisible()"
             class="absolute -top-10 -left-10 p-4 cursor-pointer"
