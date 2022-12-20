@@ -205,7 +205,7 @@ export const useProjectStore = defineStore('project', {
           }
         })
         const startIndex = this.ratedProjects.indexOf(project)
-        const removed = this.ratedProjects.splice(startIndex, 1)
+        this.ratedProjects.splice(startIndex, 1)
         //array di id che andrà a modificare local storage
         const rated = []
         this.ratedProjects.forEach(el => {
